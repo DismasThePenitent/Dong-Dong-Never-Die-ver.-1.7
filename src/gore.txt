@@ -1,0 +1,199 @@
+41fb1c: random seed, not set via srand
+417a22: rand()
+4146d0: input stuff
+414340: int get_input(int controls, int player)
+43010c: vs stage number
+
+this sets stage number as read from ini file
+00414A57  |. A3 0C014300    MOV DWORD PTR DS:[43010C],EAX            ; |
+
+sets stage number from mem:
+00408756   . A1 0C014300              MOV EAX,DWORD PTR DS:[43010C]
+
+41b574: empty space starts here
+41b588 = code can start
+41b5ec = max stage
+41b5f0 = code can start again
+
+
+
+NORMALIZE CONTROLS TO P1
+
+copy:
+425980 = keyboard controls for P1 (len=10)
+to:
+425991 = keyboard controls for P2 (len=10)
+
+copy:
+445710 = joystick controls for P1 (len=7)
+to:
+445717 = joystick controls for P2 (len=7)
+
+change:
+004144CB  |. 6A 01         PUSH 1                                   ; |Arg1 = 00000001
+to:
+004144CB  |. 6A 00         PUSH 0                                   ; |Arg1 = 00000000
+004144CB := {0x6A,0x00}
+
+
+
+DISABLE CONTROL CONFIG WRITEBACK
+
+keyboard:
+00414FCA     90            NOP
+00414FCB  |. 8B15 7C1F5400 ||MOV EDX,DWORD PTR DS:[541F7C]          ;  .....0041ECBC
+00414FD1     90            NOP
+00414FD2     90            NOP
+00414FD3     90            NOP
+00414FD4     90            NOP
+00414FD5     90            NOP
+00414FCA := {0x90,0x8B,0x15,0x7C,0x1F,0x54,0x00,0x90,0x90,0x90,0x90,0x90}
+
+joystick:
+0041502C     90            NOP
+0041502D  |. 8B15 7C1F5400 |MOV EDX,DWORD PTR DS:[541F7C]           ;  .....0041ECBC
+00415033     90            NOP
+00415034     90            NOP
+00415035     90            NOP
+00415036     90            NOP
+00415037     90            NOP
+0041502C := {0x90,0x8B,0x15,0x7C,0x1F,0x54,0x00,0x90,0x90,0x90,0x90,0x90}
+
+
+
+LOCAL HANDLER
+
+0041B588 >   CC 90                INT3 NOP                                 ;  get local player ; breakpoint for control normalization, will be removed
+0041B58A     90 90                NOP NOP                                  ;  nops due to effort
+0041B58C     E8 AF8DFFFF          CALL <.....input_getter>                 ;  get input
+0041B591     CC 90909090          INT3 NOP NOP NPO                         ;  breakpoint to get player input
+0041B596     90                   NOP
+0041B597     90                   NOP
+0041B598     90 90                NOP NOP
+0041B59A     90 90                NOP NOP
+0041B59C     9090 90909090        NOP NOP NOP NOP NOP NOP
+0041B5A2     90 90909090          NOP NOP NOP NOP NOP
+0041B5A7     90 90                NOP NOP
+0041B5A9     9090 90909090        NOP NOP NOP NOP NOP NOP
+0041B5AF     90 90909090          NOP NOP NOP NOP NOP
+0041B5B4     90 90909090          NOP NOP NOP NOP NOP
+0041B588 := {0xCC,0x90,0x90,0x90,0xE8,0xAF,0x8D,0xFF,0xFF,0xCC,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90}
+
+if we are p1:
+0041B5B9    ^E9 8291FFFF              JMP .....00414740
+else:
+0041B5B9    ^E9 9D91FFFF              JMP .....0041475B
+
+
+
+REMOTE HANDLER
+
+0041B5BE     90                       NOP                                      ;  get_remote_player ; nops due to effort, again
+0041B5BF     90                       NOP    
+0041B5C0     CC 90                    INT3 NOP                                 ;  breakpoint to insert remote player input
+0041B5C2     9090 90909090            NOP NOP NOP NOP NOP NOP
+0041B5C8     90 90909090              NOP NOP NOP NOP NOP
+0041B5CD     90 90909090              NOP NOP NOP NOP NOP
+0041B5D2     90                       NOP
+0041B5D3     90 90                    NOP NOP
+0041B5D5     90 90                    NOP NOP
+0041B5D7     9090 90909090            NOP NOP NOP NOP NOP NOP
+0041B5DD     90 90909090              NOP NOP NOP NOP NOP
+0041B5E2     90                       NOP
+0041B5BE := {0x90,0x90,0xCC,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90}
+0041B5C9 := new value
+
+if they are p1:
+0041B5E3    ^E9 5891FFFF              JMP .....00414740
+else
+0041B5E3    ^E9 7391FFFF              JMP .....0041475B
+
+
+
+STAGE SELECTOR
+
+new style random stage selector
+00408756     E9 952E0100              JMP <.....select_rnd_stage>
+00408756 := {0xE9, 0x95, 0x2E, 0x01, 0x00}
+
+0041B5F0 >   52                       PUSH EDX                                 ;  select_rnd_stage ; save EDX
+0041B5F1     E8 2CC4FFFF              CALL <.....rand>                         ;  EAX := rand()
+0041B5F6     BA 00000000              MOV EDX,0                                ;  clear EDX
+0041B5FB     F735 ECB54100            DIV DWORD PTR DS:[<max_stages>]          ;  EDX := EDX:EAX % max_stages
+0041B601     8BC2                     MOV EAX,EDX                              ;  EAX := EDX
+0041B603     5A                       POP EDX                                  ;  restore EDX
+0041B604    ^E9 52D1FEFF              JMP .....0040875B                        ;  jump back
+0041B5F0 := {0x52,0xE8,0x2C,0xC4,0xFF,0xFF,0xBA,0x00,0x00,0x00,0x00,0xF7,0x35,0xEC,0xB5,0x41,0x00,0x8B,0xC2,0x5A,0xE9,0x52,0xD1,0xFE,0xFF}
+
+
+
+HOOKING UP INPUT
+
+p1 jump, local:
+0041473B     E9 486E0000              JMP <.....get_local_player>              ;  EAX = get p1 input
+remote:
+0041473B     E9 7E6E0000              JMP <.....get_remote_player>             ;  EAX = get p1 input
+0041473B := {{0xE9,0x48,0x6E,0x00,0x00},{0xE9,0x7E,0x6E,0x00,0x00}}
+
+p2 jump, local:
+00414756 >   E9 2D6E0000              JMP <.....get_local_player>              ;  EAX = get p2 input
+remote:
+00414756 >   E9 636E0000              JMP <.....get_remote_player>             ;  EAX = get p2 input
+00414756 := {{0xE9,0x2D,0x6E,0x00,0x00},{0xE9,0x63,0x6E,0x00,0x00}}
+
+
+
+LOCAL REPLAY HOOKS
+
+the normal hooks could be reused, but this is much easier, somehow
+
+hooks:
+0041B760 >   E8 DB8BFFFF    CALL <.....input_getter>                 ;  local_replay_hook_p1 ; get input
+0041B765     CC             INT3                                     ;  breakpoint to record input
+0041B766    ^E9 D58FFFFF    JMP .....00414740                        ;  jump back
+0041B76B >   E8 D08BFFFF    CALL <.....input_getter>                 ;  local_replay_hook_p2 ; get input
+0041B770     CC             INT3                                     ;  breakpoint to record input
+0041B771    ^E9 E58FFFFF    JMP .....0041475B                        ;  jump back
+0041B760 := {0xE8,0xDB,0x8B,0xFF,0xFF,0xCC,0xE9,0xD5,0x8F,0xFF,0xFF,0xE8,0xD0,0x8B,0xFF,0xFF,0xCC,0xE9,0xE5,0x8F,0xFF,0xFF}
+
+install p1
+0041473B     E9 20700000    JMP <.....local_replay_hook_p1>          ;  EAX = Get Player 1 Input
+0041473B := {0xE9,0x20,0x70,0x00,0x00}
+
+install p2
+00414756 >   E9 10700000    JMP <.....local_replay_hook_p2>          ;  EAX = Get Player 2 Input
+00414756 := {0xE9,0x10,0x70,0x00,0x00}
+
+
+
+SINGLE PLAYER MODE SUPPORT
+
+0041B776 >   CC             INT3                                     ;  single_player_input ; break so we can get which player controls p1
+0041B777     E8 C48BFFFF    CALL <.....input_getter>                 ;  get input
+0041B77C     CC             INT3                                     ;  break again, so we can grab the input
+0041B77D    ^E9 9E8FFFFF    JMP .....00414720                        ;  jump back
+0041B776 := {0xCC,0xE8,0xC4,0x8B,0xFF,0xFF,0xCC,0xE9,0x9E,0x8F,0xFF,0xFF}
+
+0041471B     E9 56700000    JMP <.....single_player_input>           ;  single mode player input grabber, ECX has control owner
+0041471B := {0xE9,0x56,0x70,0x00,0x00}
+
+
+
+FRAME RATE COUNTER
+
+screen blitter:
+0041B782 >   CC             INT3                                     ;  screen_hook ; notify debugger
+0041B783     A1 6C474200    MOV EAX,DWORD PTR DS:[42476C]            ;  do first instruction of function
+0041B788    ^E9 8894FEFF    JMP .....00404C15                        ;  jump back
+0041B782 := {0xCC,0xA1,0x6C,0x47,0x42,0x00,0xE9,0x88,0x94,0xFE,0xFF}
+
+00404C10 >   E9 6D6B0100    JMP <.....screen_hook>
+00404C10 := {0xE9,0x6D,0x6B,0x01,0x00}
+
+title setter:
+00403F4E >|. 52             PUSH EDX                                 ; /grab title here
+replace:
+00403F4E     CC             INT3
+00403F4E := {0xCC}
+grab edx, restore PUSH, eip--, single step
+00403F4E := {0x52}
