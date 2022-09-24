@@ -1,0 +1,165 @@
+r39:
+- closing connection should close the game now, instead of freezing
+- misc bug fixes
+- spectators get player names
+- packetloss during handshake shouldn't result in freezes anymore
+- major rewrite of network related code
+- move source files into src folder
+- add icon
+- add comments to lunaport.ini
+
+r38:
+- another fix for resending of lost input, should work now
+
+r37:
+- fixes for input request/resend code (works now?)
+- adjust network string length, protocol version bump
+
+r36:
+- desync due to lost input packets should be eliminated, lost input is always resent now
+- reduced memory usage
+- reduced required network bandwidth, if no packets are lost
+- check network protocol version of packets before everything else
+- spectator tweaks, protocol version bump
+
+r35:
+- network tweaks, protocol version bump
+
+r34:
+- more major changes and fixes
+- protocol changes, protocol version bump
+- lots of testing
+
+r33:
+- fixes for r32 bugs
+
+r32:
+- major changes to netcode (experimental)
+- protocol changes, protocol version bump
+
+r31:
+- fix bug that could lead to spectator desync in rare cases
+- fix replay playback desyncs after recording a replay
+- fix possible freeze with spectators connecting to host before client
+- add AskSpectate value in lunaport.ini, to allow disabling of spectate question on failed join
+- save player names to replays
+- add --local commandline switch for mode 3, replay recording setting from lunaport.ini is respected
+
+r30:
+- display player names in game title bar (DisplayNames)
+- ask if player wants to spectate, if joining is not possible
+
+r29:
+- rename packaged game.ini so configuration is not so easily overwritten
+- add player names, configurable in lunaport.ini (PlayerName)
+- spectator mode should be fixed for real now
+- improved handshake, bumped protocol version
+- denied spectators should get correct error message now
+
+r28:
+- fixed some compiler warnings
+- actually, spectator mode still didn't work, more fixes
+- no more invalid iterators during spectator cleanup (possible crash)
+- another fix to delay calculation
+- name of game exe is now configurable as GameExe in lunaport.ini (adapted from lunapoton)
+
+r27:
+- spectator mode works now
+- re-enable -O2
+
+r26:
+- another general fix
+
+r25:
+- possible fix for general brokenness
+- fix for spectator mode
+- more debug log information
+- "activate" host's lunaport window on connection
+
+r24:
+- option for input rate display in lunaport.ini (DisplayInputrate)
+- option for FPS display in lunaport.ini (DisplayFramerate)
+- add FPS and input per second display to title bar
+
+r23:
+- remove temporary measurement code
+
+r22:
+- add more debug log information for spectator mode
+- readjust delay calculation once more
+- use measurements
+- added temporary measurement code for inputs/second
+- tweak network constants, bump protocol version
+
+r21:
+- fix to spectator mode
+
+r20:
+- readjust delay calculation (seems better for now)
+
+r19:
+- fix replay recording of single player mode in network game
+- hopefully improved netcode
+- no more -O2
+
+r18:
+- lots of testing
+
+r17:
+- another change for that part, maybe it's better now
+
+r16:
+- fix for netcode bug introduced in r13
+
+r15:
+- add setting for number of stages to lunaport.ini
+- allow host to specify delay
+- smarter user input code
+
+r14:
+- allow configuration of port in lunaport.ini
+- add support for configuration file
+
+r13:
+- lame, experimental lag spike compensation
+- increase initial spectator buffer
+
+r12:
+- quick fix for spectator mode, still experimental
+- enable -O2 for compilation
+
+r11:
+- experimental spectator support
+- improved handshake should eliminate "invalid handshake sequence" on client side due to out-of-order packets
+- bring game window to foreground
+- minor code cleanups
+
+r10:
+- support single player mode for replay recording and network
+
+r9:
+- replay recording and playback added
+
+r8:
+- more fixes for stupid bugs in netcode
+
+r7:
+- protocol version bump
+
+r6:
+- forgot to implement the most important part. oops
+
+r5:
+- hopefully improved netcode
+
+r4:
+- redesign input hooks
+- much more logging, debug output to log
+- no locking for print, temporary "fix" for lockups. what's wrong there?
+
+r3:
+- small fixes
+
+r2:
+- added lots of logging to debug build
+- fixed some small bugs in delay calculation
